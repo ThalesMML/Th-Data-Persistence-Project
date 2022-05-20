@@ -27,7 +27,7 @@ public class MainManager : MonoBehaviour
 
     private void Awake()
     {
-
+        LoadHighest();
     }
     // Start is called before the first frame update
     void Start()
@@ -49,9 +49,7 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
-
         SetBest();
-        //highestScoreText.text = $"Highest Score : {HighestPlayer} : {HighestScore}";
     }
 
     private void Update()
@@ -81,6 +79,7 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
+        SaveManager.Instance.Score = m_Points;
         currentScoreText.text = $"Score : {currentPlayerName} : {m_Points}";
     }
     public void GameOver()
@@ -97,8 +96,7 @@ public class MainManager : MonoBehaviour
         {
             HighestScore = currentScore;
             HighestPlayer = SaveManager.Instance.PlayerName;
-
-            highestScoreText.text = $"Highest Score : {HighestPlayer} : {HighestScore}";
+                        
             SaveHighest(HighestScore, HighestPlayer);
         }
     }
@@ -133,5 +131,10 @@ public class MainManager : MonoBehaviour
     {
         public string HighestName;
         public int HighestScore;
+    }
+    public void QuitToMenu()
+    {
+        SceneManager.LoadScene(0);
+        SaveManager.Instance.Awake();
     }
 }

@@ -3,20 +3,55 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System.IO;
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-public class MenuUI : MonoBehaviour
+public class MenuUI : MonoBehaviour        
 {
     public TMP_Text highestScoreText;
-    public TMP_Text playerNameInput;
+    [SerializeField] TMP_InputField playerNameInput;
+
+    private int HighestScore;
+    private string HighestPlayer;
+
+    void Awake()
+    {
+        LoadHighest();
+    }
     void Start()
     {
-        string HighestPlayer = SaveManager.Instance.PlayerName;
-        int HighestScore = SaveManager.Instance.Score;
-        highestScoreText.text = $"Highest Score : {HighestPlayer} : {HighestScore}";
+        SeeHighScore();
+    }
+    public void SeeHighScore()
+    {
+        if (HighestPlayer == null)
+        {
+            HighestPlayer = "Empty";
+        }else
+        {
+            highestScoreText.text = $"Highest Score : {HighestPlayer} : {HighestScore}";
+        }        
+    }
+    public void LoadHighest()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            HighestScore = data.HighestScore;
+            HighestPlayer = data.HighestName;
+        }
+    }
+    [System.Serializable]
+    class SaveData
+    {
+        public string HighestName;
+        public int HighestScore;
     }
     public void StartGame()
     {
