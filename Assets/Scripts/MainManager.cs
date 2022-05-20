@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using TMPro;
+using System.IO;
 
 public class MainManager : MonoBehaviour
 {
@@ -11,10 +11,12 @@ public class MainManager : MonoBehaviour
     public int LineCount = 6;
     public Rigidbody Ball;
 
-    public Text ScoreText;
+    public Text currentScoreText;
+    public Text highestScoreText;
 
-    //private SaveManager SaveManager;
-    private string playerName;
+    private string currentPlayerName;
+    private static int HighestScore;
+    private static string HighestPlayer;
 
     public GameObject GameOverText;
     
@@ -23,20 +25,15 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    //public void PlayerNameSelected(string name)
-    //{
-    //    SaveManager.Instance.playerName.text = name;
-    //}
-    
+    private void Awake()
+    {
+
+    }
     // Start is called before the first frame update
     void Start()
     {
-        playerName = SaveManager.Instance.playerName.text;
-
-        //if (SaveManager.Instance != null)
-        //{
-        //    playerName = SaveManager.Instance.playerName;
-        //}
+        currentPlayerName = SaveManager.Instance.PlayerName;
+        AddPoint(0);
 
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
@@ -52,10 +49,13 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        SetBest();
+        //highestScoreText.text = $"Highest Score : {HighestPlayer} : {HighestScore}";
     }
 
     private void Update()
-    {
+    {        
         if (!m_Started)
         {
             if (Input.GetKeyDown(KeyCode.Space))
@@ -72,21 +72,66 @@ public class MainManager : MonoBehaviour
         else if (m_GameOver)
         {
             if (Input.GetKeyDown(KeyCode.Space))
-            {
+            {                
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
     }
 
     void AddPoint(int point)
-    {        
+    {
         m_Points += point;
-        ScoreText.text = $"Score : {playerName} : {m_Points}";
+        currentScoreText.text = $"Score : {currentPlayerName} : {m_Points}";
     }
-
     public void GameOver()
     {
         m_GameOver = true;
+        CheckBest();
         GameOverText.SetActive(true);
+    }
+
+    private void CheckBest()
+    {
+        int currentScore = SaveManager.Instance.Score;
+        if (currentScore > HighestScore)
+        {
+            HighestScore = currentScore;
+            HighestPlayer = SaveManager.Instance.PlayerName;
+
+            highestScoreText.text = $"Highest Score : {HighestPlayer} : {HighestScore}";
+            SaveHighest(HighestScore, HighestPlayer);
+        }
+    }
+    private void SetBest()
+    {
+        highestScoreText.text = $"Highest Score : {HighestPlayer} : {HighestScore}";
+    }
+    public void SaveHighest(int bestScore, string bestName)
+    {
+        SaveData data = new SaveData();
+
+        data.HighestScore = bestScore;
+        data.HighestName = bestName;
+
+        string json = JsonUtility.ToJson(data);
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
+    public void LoadHighest()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            HighestScore = data.HighestScore;
+            HighestPlayer = data.HighestName;
+        }
+    }
+    [System.Serializable]
+    class SaveData
+    {
+        public string HighestName;
+        public int HighestScore;
     }
 }
