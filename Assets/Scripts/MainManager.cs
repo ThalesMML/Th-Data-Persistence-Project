@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class MainManager : MonoBehaviour
 {
@@ -11,6 +12,10 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+
+    //private SaveManager SaveManager;
+    private string playerName;
+
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -18,10 +23,21 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
+    //public void PlayerNameSelected(string name)
+    //{
+    //    SaveManager.Instance.playerName.text = name;
+    //}
     
     // Start is called before the first frame update
     void Start()
     {
+        playerName = SaveManager.Instance.playerName.text;
+
+        //if (SaveManager.Instance != null)
+        //{
+        //    playerName = SaveManager.Instance.playerName;
+        //}
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -43,7 +59,7 @@ public class MainManager : MonoBehaviour
         if (!m_Started)
         {
             if (Input.GetKeyDown(KeyCode.Space))
-            {
+            {                
                 m_Started = true;
                 float randomDirection = Random.Range(-1.0f, 1.0f);
                 Vector3 forceDir = new Vector3(randomDirection, 1, 0);
@@ -63,9 +79,9 @@ public class MainManager : MonoBehaviour
     }
 
     void AddPoint(int point)
-    {
+    {        
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = $"Score : {playerName} : {m_Points}";
     }
 
     public void GameOver()
